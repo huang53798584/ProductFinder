@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<title>Quick Product Finder</title>
+	<style type="text/css">
+		.treenode {
+			width:230px;
+		    height:130px;
+		    margin-left:100%;
+		    margin-top: -18px;
+		    text-align: center;
+		    padding-top:0px;
+		}
+
+		.height_1 {height: 230px;}
+        .height_2 {height: 120px;}
+        .height_3 {height: 65px;}
+        .height_4 {height: 50px;}
+        .height_5 {height: 32px;}
+
+        .grey_1 {background-color: #696969}
+        .grey_2 {background-color: #A9A9A9}
+        .grey_3 {background-color: #C0C0C0}
+        .grey_4 {background-color: #D3D3D3}
+        .grey_5 {background-color: #DCDCDC}
+
+        .yellow_1 {background-color: #CC9933}
+        .yellow_2 {background-color: #FFFF99}
+        .yellow_3 {background-color: #FFFFCC}
+        .yellow_4 {background-color: #FFFFE0}
+        .yellow_5 {background-color: #FFFACD}
+
+        .blue_1 {background-color: #3300CC}
+        .blue_2 {background-color: #4169E1}
+        .blue_3 {background-color: #1E90FF}
+        .blue_4 {background-color: #00BFFF}
+        .blue_5 {background-color: #87CEFA}
+
+        .description {
+        	border: solid 2px black;
+        	position:relative; 
+        }
+	</style>
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+function buildTree(root){
+	if (root.hasOwnProperty('children')) {
+		var root_id = "#" + root.number;
+
+		for (var i = 0; i < root.children.length; i++) {
+			var child = root.children[i];
+			var int_level = parseInt($(root_id).attr("level"));
+			int_level ++;
+			var child_level = int_level.toString();
+
+			// original
+			//$(root_id).append("<div id='" + child.number + "' class='treenode' level='" + child_level + "'>" + child.name + "</div>");
+
+			// rewritten
+			$("<div></div>").attr("id", child.number).attr("class", "treenode").attr("level", child_level).text(child.name).appendTo(root_id);
+
+			// set css of the child
+			var child_id = "#" + child.number;
+			var height_class = "height_" + child_level;
+			$(child_id).addClass(height_class);
+			// grey group
+			if (child_id.charAt(1) == '1') {
+				var color_class = "grey_" + child_level;
+				$(child_id).addClass(color_class);
+			}
+			// yellow group
+			else if (child_id.charAt(1) == '2') {
+				var color_class = "yellow_" + child_level;
+				$(child_id).addClass(color_class);
+			}
+			// blue group
+			else if (child_id.charAt(1) == '3') {
+				var color_class = "blue_" + child_level;
+				$(child_id).addClass(color_class);
+			}
+
+			// call the function recursively
+			buildTree(child);
+		}
+	}
+}
+
+$(document).ready(function(){
+    // load data from json file, stored in object var named root.
+    $.ajax({
+		url: 'spices.json',
+		dataType: 'json',
+		type: 'get',
+		cache: false,
+		success: function(root) {
+			// build the tree
+		    buildTree(root);
+
+		    // hide the entire tree at the beginning
+		    $("#1").find("*").hide(0);
+		    $("#2").find("*").hide(0);
+		    $("#3").find("*").hide(0);
+
+		    // set event handlers
+		    $("div").not(".description").click(function(e){
+		    	e.stopPropagation();
+		    	$(this).find("*").fadeOut();
+		    	$(this).siblings().not(".description").find("*").fadeOut();
+		    	$(this).children().fadeIn();
+
+		    	// if click on a leaf, update description
+		    	if ($(this).children().length == 0 ) {
+		 			$("#desc_title").text($(this).text());
+		 			$("#desc_content").text("Description");
+				}
+		    });
+		}
+	});
+
+    
+
+});
+</script>
+
+<body>
+<h3>Spices</h3>
+<div id="0" level="0" style="width:0px;"></div>
+
+<div class="description" style="top:10px; width:30%; height:80px;">
+	<h4 id="desc_title"></h4>
+	<p id="desc_content"></p>
+</div>
+
+</body>
+</html>
